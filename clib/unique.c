@@ -32,7 +32,7 @@ static lua_class_t unique_class;
 LUA_CLASS_FUNCS(unique, unique_class);
 
 static void
-message_cb(GSimpleAction* UNUSED(a), GVariant *message_data, lua_State *L)
+open_cb(GSimpleAction* UNUSED(a), GVariant *message_data, lua_State *L)
 {
     if (message_data &&
             g_variant_is_of_type(message_data, G_VARIANT_TYPE_STRING)) {
@@ -45,7 +45,7 @@ message_cb(GSimpleAction* UNUSED(a), GVariant *message_data, lua_State *L)
         GdkScreen *screen = gtk_window_get_screen(window);
         lua_pushlightuserdata(L, screen);
 
-        signal_object_emit(L, unique_class.signals, "message", 2, 0);
+        signal_object_emit(L, unique_class.signals, "open", 2, 0);
     }
 }
 
@@ -90,8 +90,8 @@ luaH_unique_new(lua_State *L)
     }
 
     const GActionEntry entries[] = {{
-        .name = "message",
-        .activate = (void (*) (GSimpleAction *, GVariant *, gpointer)) message_cb,
+        .name = "open",
+        .activate = (void (*) (GSimpleAction *, GVariant *, gpointer)) open_cb,
         .parameter_type = "s"
     }};
     g_action_map_add_action_entries (G_ACTION_MAP(globalconf.application),
@@ -112,7 +112,7 @@ luaH_unique_is_running(lua_State *L)
 }
 
 static gint
-luaH_unique_send_message(lua_State *L)
+luaH_unique_send_open_signal(lua_State *L)
 {
     if (!unique_is_registered())
         luaL_error(L, "GApplication is not registered");
@@ -122,7 +122,7 @@ luaH_unique_send_message(lua_State *L)
 
     GVariant *text = g_variant_new_string(luaL_checkstring(L, 1));
 
-    g_action_group_activate_action(G_ACTION_GROUP(globalconf.application), "message", text);
+    g_action_group_activate_action(G_ACTION_GROUP(globalconf.application), "open", text);
     return 0;
 }
 
@@ -202,7 +202,7 @@ unique_lib_setup(lua_State *L)
     {
         LUA_CLASS_METHODS(unique)
         { "new", luaH_unique_new },
-        { "send_message", luaH_unique_send_message },
+        { "send_open_signal", luaH_unique_send_open_signal },
         { "is_running", luaH_unique_is_running },
         { NULL, NULL }
     };

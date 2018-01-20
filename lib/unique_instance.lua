@@ -45,7 +45,7 @@ if unique.is_running() then
         u[i] = lfs.attributes(uri) and ("file://"..os.abspath(uri):gsub(" ","%%20")) or uri
     end
 
-    unique.send_message("open-uri-set " .. pickle.pickle(u))
+    unique.send_open_signal("open-uri-set " .. pickle.pickle(u))
     luakit.quit()
 end
 

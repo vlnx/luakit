@@ -13,7 +13,7 @@
 --- @function new
 -- Set up an application with a shared identifier used to locate
 -- already-running instances. This must be called before calling
--- @ref{is_running} or @ref{send_message}.
+-- @ref{is_running} or @ref{send_open_signal}.
 -- @tparam string id The application identifier string to use.
 
 --- @function is_running
@@ -21,15 +21,15 @@
 -- `unique.new` is already running.
 -- @treturn boolean `true` if an application instance is already running.
 
---- @function send_message
--- Send a message (which must be a string) to the primary instance of
+--- @function send_open_signal
+-- Send a signal to open a uri to the primary instance of
 -- the application.
 -- @tparam string message The message to send to the primary instance.
 
---- @signal message
+--- @signal open
 -- Emitted only on the primary instance when a message is received from
 -- a secondary instance.
--- @tparam string message The message sent with `unique.send_message()`.
+-- @tparam string message The message sent with `unique.send_open_signal()`.
 -- @tparam screen screen An opaque piece of data that represents the screen of
 -- the currently focused window of the main instance.
 
