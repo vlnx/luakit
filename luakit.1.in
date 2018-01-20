@@ -90,7 +90,7 @@ Configuration file to use.
 Fork \*[appname] into the background.
 .TP
 .BR -U ", " --nounique
-Ignore libunique bindings.
+Ignore unique/gapplication bindings.
 .TP
 .BR -u ", " --uri = \fIURI\fR
 URI(s) to load at startup.
