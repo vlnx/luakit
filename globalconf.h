@@ -31,6 +31,7 @@
 /** Global luakit state struct. */
 typedef struct {
     /** GTK application */
+    gchar *application_name;
     GtkApplication *application;
 
     /** User path $XDG_CONFIG_DIR/luakit/ (defaults to ~/.config/luakit/) where

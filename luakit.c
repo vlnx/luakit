@@ -193,6 +193,10 @@ glib_log_writer(GLogLevelFlags log_level_flags, const GLogField *fields, gsize n
 gint
 main(gint argc, gchar *argv[])
 {
+    globalconf.application_name = "org.luakit";
+    if (!g_application_id_is_valid(globalconf.application_name))
+        fatal("invalid application name");
+    globalconf.application = gtk_application_new(globalconf.application_name, G_APPLICATION_FLAGS_NONE);
     gboolean *nonblock = NULL;
     globalconf.starttime = l_time();
 

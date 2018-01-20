@@ -33,7 +33,7 @@ if not unique then
     return _M
 end
 
-unique.new("org.luakit")
+unique.new()
 
 -- Check for a running luakit instance
 if unique.is_running() then
