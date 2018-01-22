@@ -40,37 +40,14 @@ if unique.is_running() then
     msg.verbose("a primary instance is already running")
     local pickle = require("lousy.pickle")
 
-    local u = {}
-    for i, uri in ipairs(uris) do
-        u[i] = lfs.attributes(uri) and ("file://"..os.abspath(uri):gsub(" ","%%20")) or uri
-    end
+    -- local u = {}
+    -- for i, uri in ipairs(uris) do
+    --     u[i] = lfs.attributes(uri) and ("file://"..os.abspath(uri):gsub(" ","%%20")) or uri
+    -- end
 
-    unique.send_open_signal(pickle.pickle(u))
+    unique.send_open_signal("deprecated")
     luakit.quit()
 end
-
-unique.add_signal("open", function (message, screen)
-    msg.verbose("received message from secondary instance")
-    local lousy, window = require "lousy", require "window"
-    local w
-
-    local u = lousy.pickle.unpickle(message)
-    -- Get the window to use
-    if #u == 0 or _M.open_links_in_new_window then
-       w = window.new(u)
-    else
-       w = lousy.util.table.values(window.bywidget)[1]
-    end
-
-    if not _M.open_links_in_new_window then
-       for _, uri in ipairs(u) do
-          w:new_tab(w:search_open(uri))
-       end
-    end
-
-    w.win.screen = screen
-    w.win.urgency_hint = true
-end)
 
 return _M
 

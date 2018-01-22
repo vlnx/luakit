@@ -869,6 +869,14 @@ luaH_class_newindex_miss_property(lua_State *L, lua_object_t* UNUSED(obj))
     return 0;
 }
 
+void
+luaH_emit_browse_signal(lua_State *L, const gchar *uri, GdkScreen *screen)
+{
+    lua_pushstring(L, uri);
+    lua_pushlightuserdata(L, screen);
+    signal_object_emit(L, luakit_class.signals, "browse", 2, 0);
+}
+
 /** Setup luakit module.
  *
  * \param L The Lua VM state.

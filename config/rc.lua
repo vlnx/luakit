@@ -172,15 +172,31 @@ end
 -- End user script loading --
 -----------------------------
 
--- Restore last saved session
-local w = (not luakit.nounique) and (session and session.restore())
-if w then
-    for i, uri in ipairs(uris) do
-        w:new_tab(uri, { switch = i == 1 })
+local browse_each_link_in_new_window = false
+
+luakit.add_signal("browse", function (uri, screen)
+    msg.info("received entry point uri to start browsing, '%s'", uri)
+
+    -- get a window
+    local w
+    if browse_each_link_in_new_window then w = window.new() end
+    -- try to get an open window
+    if not w then w = lousy.util.table.values(window.bywidget)[1] end
+    -- try to get a previous session
+    if not w and session then w = session.restore() end
+    -- open a new window
+    if not w then
+        w = window.new()
+        -- and if given an empty string, default to the home_page
+        if not uri or uri:match("^%s*$") then uri = settings.get_setting("window.home_page") end
     end
-else
-    -- Or open new window
-    window.new(uris)
-end
+
+    -- browse the new uri in the window
+    if uri and not uri:match("^%s*$") then
+        w:new_tab(w:search_open(uri), { switch = true })
+    end
+    w.win.screen = screen
+    w.win.urgency_hint = true
+end)
 
 -- vim: et:sw=4:ts=8:sts=4:tw=80

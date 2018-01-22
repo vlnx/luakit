@@ -25,6 +25,7 @@
 #include "common/luah.h"
 
 void luaH_init();
+void luaH_browse(gchar ** uris);
 gboolean luaH_parserc(const gchar *, gboolean);
 gint luaH_mtnext(lua_State *, gint);
 

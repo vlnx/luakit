@@ -46,6 +46,7 @@
 
 #include <glib.h>
 #include <gtk/gtk.h>
+#include <gdk/gdk.h>
 #include <stdlib.h>
 
 void
@@ -93,7 +94,7 @@ luaH_keystr_push(lua_State *L, guint keyval)
 }
 
 void
-luaH_init(gchar ** uris)
+luaH_init()
 {
     /* Lua VM init */
     lua_State *L = common.L = luaL_newstate();
@@ -155,16 +156,25 @@ luaH_init(gchar ** uris)
 
     /* add Lua search paths */
     luaH_add_paths(L, globalconf.config_dir);
-
-    /* push a table of the startup uris */
-    const gchar *uri;
-    lua_newtable(L);
-    for (gint i = 0; uris && (uri = uris[i]); i++) {
-        lua_pushstring(L, uri);
-        lua_rawseti(L, -2, i + 1);
-    }
-    lua_setglobal(L, "uris");
 }
+
+
+/* emit each initial uri to the signal caught by rc file */
+void
+luaH_browse(gchar ** uris)
+{
+    const gchar *uri;
+    // Should emit something, fallback to an empty string
+    if (g_strv_length(uris) == 0) {
+        uri = "";
+        luaH_emit_browse_signal(common.L, uri, gdk_screen_get_default());
+    } else {
+    for (gint i = 0; uris && (uri = uris[i]); i++) {
+        luaH_emit_browse_signal(common.L, uri, gdk_screen_get_default());
+    }
+  }
+}
+
 
 static gboolean
 luaH_loadrc(const gchar *confpath, gboolean run)

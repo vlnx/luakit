@@ -23,6 +23,7 @@
 #include "clib/unique.h"
 #include "globalconf.h"
 #include "luah.h"
+#include "clib/luakit.h"
 
 #include <gtk/gtk.h>
 #include <glib.h>
@@ -37,15 +38,11 @@ open_cb(GSimpleAction* UNUSED(a), GVariant *message_data, lua_State *L)
     if (message_data &&
             g_variant_is_of_type(message_data, G_VARIANT_TYPE_STRING)) {
         const gchar *text = g_variant_get_string (message_data, NULL);
-        lua_pushstring(L, text);
-
         GtkWindow *window = gtk_application_get_active_window(globalconf.application);
         if (!window)
             warn("It's not a window!!!");
         GdkScreen *screen = gtk_window_get_screen(window);
-        lua_pushlightuserdata(L, screen);
-
-        signal_object_emit(L, unique_class.signals, "open", 2, 0);
+        luaH_emit_browse_signal(L, text, screen);
     }
 }
 

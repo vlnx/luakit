@@ -240,11 +240,13 @@ main(gint argc, gchar *argv[])
     init_directories();
     web_context_init();
     ipc_init();
-    luaH_init(uris);
+    luaH_init();
 
     /* parse and run configuration file */
     if (!luaH_parserc(globalconf.confpath, TRUE))
         fatal("couldn't find rc file");
+
+    luaH_browse(uris);
 
     if (!globalconf.windows->len)
         fatal("no windows spawned by rc file, exiting");
