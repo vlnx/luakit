@@ -441,12 +441,23 @@ _M.methods = {
             view = arg
             local ww = webview.window(view)
             ww:detach_tab(view)
+            w:attach_tab(view, switch, order)
         else
-            -- Make new webview widget
-            view = webview.new({ private = opts.private })
+           -- re-use any existing 'blank' views
+           for tabindex, tab in ipairs(w.tabs.children) do
+              if tab.uri == settings.get_setting("window.new_tab_page") then
+                 msg.warn("new_tab: using existing blank tab, %s", tab.uri)
+                 view = tab
+                 break
+              end
+           end
+           if not view then
+              -- Make new webview widget
+              view = webview.new({ private = opts.private })
+              w:attach_tab(view, switch, order)
+           end
         end
 
-        w:attach_tab(view, switch, order)
         if arg and not (type(arg) == "widget" and arg.type == "webview") then
             webview.set_location(view, arg)
         end
