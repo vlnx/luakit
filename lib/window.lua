@@ -710,24 +710,11 @@ function _M.new(args)
     end
     _M.emit_signal("init", w)
 
-    -- Populate notebook with tabs
-    for _, arg in ipairs(args or {}) do
-        if type(arg) == "string" then
-            arg = w:search_open(arg)
-        end
-        w:new_tab(arg, false)
-    end
-
     -- Show window
     w.win:show()
 
     -- Set initial mode
     w:set_mode()
-
-    -- Make sure something is loaded
-    if w.tabs:count() == 0 then
-        w:new_tab(w:search_open(settings.get_setting("window.home_page")), false)
-    end
 
     return w
 end
