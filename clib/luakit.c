@@ -689,7 +689,6 @@ luaH_luakit_index(lua_State *L)
       PS_CASE(RESOURCE_PATH,    resource_path_get())
       /* push boolean properties */
       PB_CASE(VERBOSE,          log_get_verbosity("all") >= LOG_LEVEL_verbose)
-      PB_CASE(NOUNIQUE,         globalconf.nounique)
       PB_CASE(ENABLE_SPELL_CHECKING,    webkit_web_context_get_spell_checking_enabled(web_context_get()))
       /* push integer properties */
       PI_CASE(PROCESS_LIMIT,    web_context_process_limit_get())
@@ -870,7 +869,7 @@ luaH_class_newindex_miss_property(lua_State *L, lua_object_t* UNUSED(obj))
 }
 
 void
-luaH_emit_browse_signal(lua_State *L, const gchar *uri, GdkScreen *screen)
+luaH_emit_browse_signal(lua_State *L, gchar *uri, GdkScreen *screen)
 {
     lua_pushstring(L, uri);
     lua_pushlightuserdata(L, screen);

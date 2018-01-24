@@ -23,9 +23,10 @@
 #define LUAKIT_LUAH_H
 
 #include "common/luah.h"
+#include <gtk/gtk.h>
 
 void luaH_init();
-void luaH_browse(gchar ** uris);
+void luakit_browse(GApplication *application, GFile **files, gint n_files, gchar hint);
 gboolean luaH_parserc(const gchar *, gboolean);
 gint luaH_mtnext(lua_State *, gint);
 

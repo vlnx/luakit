@@ -32,7 +32,6 @@
 #include "clib/request.h"
 #include "clib/sqlite3.h"
 #include "clib/soup.h"
-#include "clib/unique.h"
 #include "clib/widget.h"
 #include "clib/xdg.h"
 #include "clib/stylesheet.h"
@@ -117,10 +116,6 @@ luaH_init()
     /* Export soup lib */
     soup_lib_setup(L);
 
-    if (!globalconf.nounique)
-        /* Export unique lib */
-        unique_lib_setup(L);
-
     /* Export widget */
     widget_class_setup(L);
 
@@ -158,23 +153,27 @@ luaH_init()
     luaH_add_paths(L, globalconf.config_dir);
 }
 
-
-/* emit each initial uri to the signal caught by rc file */
 void
-luaH_browse(gchar ** uris)
+luakit_browse(GApplication *application, GFile **files, gint n_files, gchar hint)
 {
-    const gchar *uri;
-    // Should emit something, fallback to an empty string
-    if (g_strv_length(uris) == 0) {
-        uri = "";
-        luaH_emit_browse_signal(common.L, uri, gdk_screen_get_default());
+    g_application_hold(application);
+    GtkWindow *window = gtk_application_get_active_window(GTK_APPLICATION(application));
+    GdkScreen *screen;
+    screen = window ? gtk_window_get_screen(window) : gdk_screen_get_default();
+    if (n_files == 0) {
+        luaH_emit_browse_signal(common.L, "", screen);
     } else {
-    for (gint i = 0; uris && (uri = uris[i]); i++) {
-        luaH_emit_browse_signal(common.L, uri, gdk_screen_get_default());
+        gint i;
+        for (i = 0; i < n_files; i++) {
+            luaH_emit_browse_signal(common.L,
+                                    g_file_query_exists(files[i], NULL)
+                                    ? g_file_get_uri(files[i])
+                                    : g_file_get_basename(files[i])
+                                    , screen);
+        }
     }
-  }
+    g_application_release(application);
 }
-
 
 static gboolean
 luaH_loadrc(const gchar *confpath, gboolean run)

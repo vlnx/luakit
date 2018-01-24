@@ -4,8 +4,6 @@
 
 require "lfs"
 
-require "unique_instance"
-
 -- Set the number of web processes to use. A value of 0 means 'no limit'.
 luakit.process_limit = 4
 -- Set the cookie storage location

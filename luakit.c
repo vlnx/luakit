@@ -93,7 +93,7 @@ parseopts(int *argc, gchar *argv[], gboolean **nonblock)
         { "config",   'c', 0, G_OPTION_ARG_STRING,       &globalconf.confpath, "configuration file to use", "FILE" },
         { "profile",  'p', 0, G_OPTION_ARG_STRING,       &globalconf.profile,  "profile name to use",       "NAME" },
         { "nonblock", 'n', 0, G_OPTION_ARG_NONE,         nonblock,             "run in background",         NULL   },
-        { "nounique", 'U', 0, G_OPTION_ARG_NONE,         &globalconf.nounique, "ignore unique/gapplication", NULL   },
+        { "nounique", 'U', 0, G_OPTION_ARG_NONE,         &globalconf.nounique, "ignore unique/gapplication", NULL  },
         { "uri",      'u', 0, G_OPTION_ARG_STRING_ARRAY, &uris,                "uri(s) to load at startup", "URI"  },
         { "verbose",  'v', 0, G_OPTION_ARG_NONE,         &verbose,             "print verbose output",      NULL   },
         { "log",      'l', 0, G_OPTION_ARG_STRING,       &log_lvl,             "specify precise log level", "NAME" },
@@ -196,7 +196,6 @@ main(gint argc, gchar *argv[])
     globalconf.application_name = "org.luakit";
     if (!g_application_id_is_valid(globalconf.application_name))
         fatal("invalid application name");
-    globalconf.application = gtk_application_new(globalconf.application_name, G_APPLICATION_FLAGS_NONE);
     gboolean *nonblock = NULL;
     globalconf.starttime = l_time();
 
@@ -210,6 +209,38 @@ main(gint argc, gchar *argv[])
 
     /* parse command line opts and get uris to load */
     gchar **uris = parseopts(&argc, argv, &nonblock);
+
+    globalconf.application = gtk_application_new(globalconf.application_name,
+                                                 globalconf.nounique ? G_APPLICATION_NON_UNIQUE | G_APPLICATION_HANDLES_OPEN
+                                                 : G_APPLICATION_HANDLES_OPEN);
+
+    // register gapplication, lets probe to find an existing instance work
+    GError *error = NULL;
+    g_application_register(G_APPLICATION(globalconf.application), NULL, &error);
+    if (error != NULL
+        && g_application_get_is_registered(G_APPLICATION(globalconf.application))) {
+        g_error_free(error);
+        g_object_unref(G_OBJECT(globalconf.application));
+        globalconf.application = NULL;
+        fatal("unable to register gapplication: %s\n", error->message);
+    }
+
+    g_signal_connect(globalconf.application, "open", G_CALLBACK(luakit_browse), NULL);
+
+    // translate **uris array to GFiles
+    GFile **files;
+    gint n_files;
+    gint i;
+    n_files = g_strv_length(uris);
+    files = g_new(GFile *, n_files);
+    for (i = 0; i < n_files; i++)
+        files[i] = g_file_new_for_commandline_arg(uris[i]);
+
+    // if there's a secondary, send GFiles and exit
+    if (g_application_get_is_remote(G_APPLICATION(globalconf.application))) {
+        g_application_open(G_APPLICATION(globalconf.application), files, n_files, "");
+        return 0;
+    }
 
     /* hide command line parameters so process lists don't leak (possibly
        confidential) URLs */
@@ -246,10 +277,14 @@ main(gint argc, gchar *argv[])
     if (!luaH_parserc(globalconf.confpath, TRUE))
         fatal("couldn't find rc file");
 
-    luaH_browse(uris);
+    // if primary, send initial open calls
+    if (!g_application_get_is_remote(G_APPLICATION(globalconf.application))) {
+        g_application_open(G_APPLICATION(globalconf.application), files, n_files, "");
+    }
+    for (i = 0; i < n_files; i++)
+        g_object_unref(files[i]);
+    g_free (files);
 
-    if (!globalconf.windows->len)
-        fatal("no windows spawned by rc file, exiting");
 
     gtk_main();
     return EXIT_SUCCESS;
