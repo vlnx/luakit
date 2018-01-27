@@ -90,7 +90,7 @@ Configuration file to use.
 Fork \*[appname] into the background.
 .TP
 .BR -U ", " --nonunique
-Use the nonunique gapplication flag.
+Use the nonunique gapplication flag, for a single instance session.
 .TP
 .BR -u ", " --uri = \fIURI\fR
 URI(s) to load at startup.

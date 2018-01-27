@@ -53,8 +53,6 @@ typedef struct {
     gchar *confpath;
     /** The luakit executable path. */
     gchar *execpath;
-    /** Use the nonunique gapplication flag (for a single instance session) */
-    gboolean nonunique;
     /** Arguments provided to luakit */
     GPtrArray *argv;
 
