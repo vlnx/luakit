@@ -85,20 +85,20 @@ parseopts(int *argc, gchar *argv[], gboolean **nonblock)
 
     /* save luakit exec path */
     globalconf.execpath = g_strdup(argv[0]);
-    globalconf.nounique = FALSE;
+    globalconf.nonunique = FALSE;
 
     /* define command line options */
     const GOptionEntry entries[] = {
-        { "check",    'k', 0, G_OPTION_ARG_NONE,         &check_only,          "check config and exit",     NULL   },
-        { "config",   'c', 0, G_OPTION_ARG_STRING,       &globalconf.confpath, "configuration file to use", "FILE" },
-        { "profile",  'p', 0, G_OPTION_ARG_STRING,       &globalconf.profile,  "profile name to use",       "NAME" },
-        { "nonblock", 'n', 0, G_OPTION_ARG_NONE,         nonblock,             "run in background",         NULL   },
-        { "nounique", 'U', 0, G_OPTION_ARG_NONE,         &globalconf.nounique, "ignore unique/gapplication", NULL  },
-        { "uri",      'u', 0, G_OPTION_ARG_STRING_ARRAY, &uris,                "uri(s) to load at startup", "URI"  },
-        { "verbose",  'v', 0, G_OPTION_ARG_NONE,         &verbose,             "print verbose output",      NULL   },
-        { "log",      'l', 0, G_OPTION_ARG_STRING,       &log_lvl,             "specify precise log level", "NAME" },
-        { "version",  'V', 0, G_OPTION_ARG_NONE,         &version_only,        "print version and exit",    NULL   },
-        { NULL,       0,   0, 0,                         NULL,                 NULL,                        NULL   },
+        { "check",     'k', 0, G_OPTION_ARG_NONE,         &check_only,          "check config and exit",     NULL            },
+        { "config",    'c', 0, G_OPTION_ARG_STRING,       &globalconf.confpath, "configuration file to use", "FILE"          },
+        { "profile",   'p', 0, G_OPTION_ARG_STRING,       &globalconf.profile,  "profile name to use",       "NAME"          },
+        { "nonblock",  'n', 0, G_OPTION_ARG_NONE,         nonblock,             "run in background",         NULL            },
+        { "nonunique", 'U', 0, G_OPTION_ARG_NONE,         &globalconf.nonunique, "Use the nonunique gapplication flag", NULL },
+        { "uri",       'u', 0, G_OPTION_ARG_STRING_ARRAY, &uris,                "uri(s) to load at startup", "URI"           },
+        { "verbose",   'v', 0, G_OPTION_ARG_NONE,         &verbose,             "print verbose output",      NULL            },
+        { "log",       'l', 0, G_OPTION_ARG_STRING,       &log_lvl,             "specify precise log level", "NAME"          },
+        { "version",   'V', 0, G_OPTION_ARG_NONE,         &version_only,        "print version and exit",    NULL            },
+        { NULL,        0,   0, 0,                         NULL,                 NULL,                        NULL            },
     };
 
     /* Save a copy of argv */
@@ -211,7 +211,7 @@ main(gint argc, gchar *argv[])
     gchar **uris = parseopts(&argc, argv, &nonblock);
 
     globalconf.application = gtk_application_new(globalconf.application_name,
-                                                 globalconf.nounique ? G_APPLICATION_NON_UNIQUE | G_APPLICATION_HANDLES_OPEN
+                                                 globalconf.nonunique ? G_APPLICATION_NON_UNIQUE | G_APPLICATION_HANDLES_OPEN
                                                  : G_APPLICATION_HANDLES_OPEN);
 
     // register gapplication, lets probe to find an existing instance work

@@ -89,8 +89,8 @@ Configuration file to use.
 .BR -n ", " --nonblock
 Fork \*[appname] into the background.
 .TP
-.BR -U ", " --nounique
-Ignore unique/gapplication bindings.
+.BR -U ", " --nonunique
+Use the nonunique gapplication flag.
 .TP
 .BR -u ", " --uri = \fIURI\fR
 URI(s) to load at startup.
