@@ -190,7 +190,8 @@ luakit.add_signal("browse", function (uri, screen)
     end
 
     -- browse the new uri in the window
-    if uri and not uri:match("^%s*$") then
+    if uri == settings.get_setting("window.home_page")
+    or uri and not uri:match("^%s*$") then
         w:new_tab(w:search_open(uri), { switch = true })
     end
     w.win.screen = screen
