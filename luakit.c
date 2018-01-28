@@ -205,6 +205,18 @@ luakit_startup(GApplication UNUSED(app))
         fatal("couldn't find rc file");
 }
 
+void
+luakit_options(GApplication *app, GApplicationCommandLine *cmdline, gpointer UNUSED(user_data))
+{
+    return;
+}
+
+void
+luakit_local_options(GApplication *app, GVariantDict *dict, gpointer UNUSED(user_data))
+{
+    return;
+}
+
 gint
 main(gint argc, gchar *argv[])
 {
@@ -227,10 +239,13 @@ main(gint argc, gchar *argv[])
     gchar **uris = parseopts(&argc, argv, &nonblock, &nonunique);
 
     globalconf.application = gtk_application_new(globalconf.application_name,
-                                                 nonunique ? G_APPLICATION_NON_UNIQUE | G_APPLICATION_HANDLES_OPEN
-                                                 : G_APPLICATION_HANDLES_OPEN);
+                                                 nonunique ? G_APPLICATION_NON_UNIQUE | G_APPLICATION_HANDLES_COMMAND_LINE | G_APPLICATION_HANDLES_OPEN
+                                                 : G_APPLICATION_HANDLES_COMMAND_LINE | G_APPLICATION_HANDLES_OPEN);
 
+    g_signal_connect(globalconf.application, "command-line", G_CALLBACK(luakit_options), NULL);
+    g_signal_connect(globalconf.application, "handle-local-options", G_CALLBACK(luakit_local_options), NULL);
     g_signal_connect(globalconf.application, "startup", G_CALLBACK(luakit_startup), NULL);
+    g_signal_connect(globalconf.application, "open", G_CALLBACK(luakit_browse), NULL);
 
     // register gapplication, lets probe to find an existing instance work
     GError *error = NULL;
@@ -242,8 +257,6 @@ main(gint argc, gchar *argv[])
         globalconf.application = NULL;
         fatal("unable to register gapplication: %s\n", error->message);
     }
-
-    g_signal_connect(globalconf.application, "open", G_CALLBACK(luakit_browse), NULL);
 
     // translate **uris array to GFiles
     GFile **files;
