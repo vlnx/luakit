@@ -38,6 +38,11 @@
 #error Your version of WebKit is outdated!
 #endif
 
+gboolean *version_only = NULL;
+gboolean *check_only = NULL;
+gboolean verbose = FALSE;
+gchar *log_lvl = NULL;
+
 static void
 init_directories(void)
 {
@@ -134,18 +139,15 @@ luakit_activate(GApplication *app)
 }
 
 gint
-luakit_local_options(GApplication UNUSED(app), GVariantDict *dict)
+luakit_local_options(GApplication UNUSED(app), GVariantDict UNUSED(dict))
 {
-    GVariant *value;
     /* print version and exit */
-    value = g_variant_dict_lookup_value(dict, "version", NULL);
-    if (value) {
+    if (version_only) {
         g_printf("luakit %s\n", VERSION);
         return 0;
     }
     /* check config syntax and exit */
-    value = g_variant_dict_lookup_value(dict, "check", NULL);
-    if (value) {
+    if (check_only) {
         init_directories();
         luaH_init(NULL);
         if (!luaH_parserc(globalconf.confpath, FALSE)) {
@@ -157,11 +159,7 @@ luakit_local_options(GApplication UNUSED(app), GVariantDict *dict)
         }
     }
     /* log level */
-    gboolean verbose = false;
-    value = g_variant_dict_lookup_value(dict, "verbose", NULL);
-    if (value) verbose = true;
-    gchar *log_lvl = NULL;
-    if (g_variant_dict_lookup(dict, "log", "s", &log_lvl)) {
+    if (log_lvl) {
         log_set_verbosity("all", LOG_LEVEL_info);
         parse_log_level_option(log_lvl);
         if (verbose)
@@ -191,17 +189,17 @@ main(gint argc, gchar *argv[])
     // Before gapplication kicks in, test for existence of the following flags
     gboolean *nonblock = NULL;
     gboolean *nonunique = false;
-    /* const GOptionEntry low_lvl_entries[] = { */
-    /*     { "nonblock",  'n', 0, G_OPTION_ARG_NONE, &nonblock,  "run in background",                    NULL }, */
-    /*     { "nonunique", 'U', 0, G_OPTION_ARG_NONE, &nonunique, "Use the nonunique gapplication flag",  NULL }, */
-    /*     { NULL } */
-    /* }; */
-    /* GOptionContext *context; */
-    /* context = g_option_context_new(NULL); */
-    /* g_option_context_add_main_entries(context, low_lvl_entries, NULL); */
-    /* g_option_context_set_help_enabled(context, false); */
-    /* g_option_context_parse(context, &argc, &argv, NULL); */
-    /* g_option_context_free(context); */
+    const GOptionEntry low_lvl_entries[] = {
+        { "nonblock",  'n', 0, G_OPTION_ARG_NONE, &nonblock,  "run in background",                    NULL },
+        { "nonunique", 'U', 0, G_OPTION_ARG_NONE, &nonunique, "Use the nonunique gapplication flag",  NULL },
+        { NULL }
+    };
+    GOptionContext *context;
+    context = g_option_context_new(NULL);
+    g_option_context_add_main_entries(context, low_lvl_entries, NULL);
+    g_option_context_set_help_enabled(context, false);
+    g_option_context_parse(context, &argc, &argv, NULL);
+    g_option_context_free(context);
 
     /* if non block mode - respawn, detach and continue in child */
     if (nonblock) {
@@ -229,11 +227,12 @@ main(gint argc, gchar *argv[])
         g_application_set_flags(G_APPLICATION(globalconf.application), G_APPLICATION_NON_UNIQUE | G_APPLICATION_HANDLES_OPEN);
 
     /* register command line options */
+    globalconf.profile = NULL;
     const GOptionEntry entries[] = {
-        { "check",     'k', 0, G_OPTION_ARG_NONE,   NULL,                 "check config and exit",               NULL   },
-        { "version",   'V', 0, G_OPTION_ARG_NONE,   NULL,                 "print version and exit",              NULL   },
-        { "verbose",   'v', 0, G_OPTION_ARG_NONE,   NULL,                 "print verbose output",                NULL   },
-        { "log",       'l', 0, G_OPTION_ARG_STRING, NULL,                 "specify precise log level",           "NAME" },
+        { "check",     'k', 0, G_OPTION_ARG_NONE,   &check_only,          "check config and exit",               NULL   },
+        { "version",   'V', 0, G_OPTION_ARG_NONE,   &version_only,        "print version and exit",              NULL   },
+        { "verbose",   'v', 0, G_OPTION_ARG_NONE,   &verbose,             "print verbose output",                NULL   },
+        { "log",       'l', 0, G_OPTION_ARG_STRING, &log_lvl,             "specify precise log level",           "NAME" },
         { "config",    'c', 0, G_OPTION_ARG_STRING, &globalconf.confpath, "configuration file to use",           "FILE" },
         { "profile",   'p', 0, G_OPTION_ARG_STRING, &globalconf.profile,  "profile name to use",                 "NAME" },
         // following two entries are only in this entry group to be displayed via --help
