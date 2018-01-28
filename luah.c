@@ -154,7 +154,7 @@ luaH_init()
 }
 
 void
-luakit_browse(GApplication *application, GFile **files, gint n_files, gchar hint)
+luakit_browse(GApplication *application, GFile **files, gint n_files, gchar UNUSED(hint))
 {
     g_application_hold(application);
     GtkWindow *window = gtk_application_get_active_window(GTK_APPLICATION(application));
