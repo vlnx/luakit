@@ -173,7 +173,7 @@ end
 local browse_each_link_in_new_window = false
 
 luakit.add_signal("browse", function (uri, screen)
-    msg.info("received entry point uri to start browsing, '%s'", uri)
+    msg.verbose("received entry point uri to start browsing, '%s'", uri)
 
     -- get a window
     local w
