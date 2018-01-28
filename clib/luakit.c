@@ -802,10 +802,7 @@ luaH_luakit_newindex(lua_State *L)
 static gint
 luaH_luakit_quit(lua_State *UNUSED(L))
 {
-    if (gtk_main_level())
-        gtk_main_quit();
-    else
-        exit(EXIT_SUCCESS);
+    g_application_quit(G_APPLICATION(globalconf.application));
     return 0;
 }
 
