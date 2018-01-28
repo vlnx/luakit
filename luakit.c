@@ -189,6 +189,22 @@ parseopts(int *argc, gchar *argv[], gboolean **nonblock, gboolean **nonunique)
         return g_strdupv(argv + 1);
 }
 
+void
+luakit_startup(GApplication UNUSED(app))
+{
+    globalconf.windows = g_ptr_array_new();
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ >= 50
+    g_log_set_writer_func(glib_log_writer, NULL, NULL);
+#endif
+    init_directories();
+    web_context_init();
+    ipc_init();
+    luaH_init();
+    /* parse and run configuration file */
+    if (!luaH_parserc(globalconf.confpath, TRUE))
+        fatal("couldn't find rc file");
+}
+
 gint
 main(gint argc, gchar *argv[])
 {
@@ -213,6 +229,8 @@ main(gint argc, gchar *argv[])
     globalconf.application = gtk_application_new(globalconf.application_name,
                                                  nonunique ? G_APPLICATION_NON_UNIQUE | G_APPLICATION_HANDLES_OPEN
                                                  : G_APPLICATION_HANDLES_OPEN);
+
+    g_signal_connect(globalconf.application, "startup", G_CALLBACK(luakit_startup), NULL);
 
     // register gapplication, lets probe to find an existing instance work
     GError *error = NULL;
@@ -247,8 +265,6 @@ main(gint argc, gchar *argv[])
     for (gint i = 1; i < argc; i++)
         memset(argv[i], 0, strlen(argv[i]));
 
-    globalconf.windows = g_ptr_array_new();
-
     /* if non block mode - respawn, detach and continue in child */
     if (nonblock) {
         pid_t pid = fork();
@@ -263,20 +279,6 @@ main(gint argc, gchar *argv[])
         }
     }
 
-    gtk_init(&argc, &argv);
-
-#if __GLIBC__ == 2 && __GLIBC_MINOR__ >= 50
-    g_log_set_writer_func(glib_log_writer, NULL, NULL);
-#endif
-    init_directories();
-    web_context_init();
-    ipc_init();
-    luaH_init();
-
-    /* parse and run configuration file */
-    if (!luaH_parserc(globalconf.confpath, TRUE))
-        fatal("couldn't find rc file");
-
     // if primary, send initial open calls
     if (!g_application_get_is_remote(G_APPLICATION(globalconf.application))) {
         g_application_open(G_APPLICATION(globalconf.application), files, n_files, "");
@@ -285,9 +287,9 @@ main(gint argc, gchar *argv[])
         g_object_unref(files[i]);
     g_free (files);
 
-
-    gtk_main();
-    return EXIT_SUCCESS;
+    int status = g_application_run(G_APPLICATION(globalconf.application), argc, argv);
+    g_object_unref(globalconf.application);
+    return status;
 }
 
 // vim: ft=c:et:sw=4:ts=8:sts=4:tw=80
