@@ -168,7 +168,9 @@ luakit_browse(GApplication *application, GFile **files, gint n_files, gchar UNUS
             luaH_emit_browse_signal(common.L,
                                     g_file_query_exists(files[i], NULL)
                                     ? g_file_get_uri(files[i])
-                                    : g_file_get_parse_name(files[i])
+                                    : (g_file_has_uri_scheme(files[i], "file")
+                                       ? g_file_get_basename(files[i])
+                                       : g_file_get_parse_name(files[i]))
                                     , screen);
         }
     }
