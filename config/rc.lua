@@ -183,17 +183,15 @@ luakit.add_signal("browse", function (uri, screen)
     -- try to get a previous session
     if not w and session then w = session.restore() end
     -- open a new window
-    if not w then
-        w = window.new()
-        -- and if given an empty string, default to the home_page
-        if not uri or uri:match("^%s*$") then uri = settings.get_setting("window.home_page") end
-    end
+    if not w then w = window.new() end
 
     -- browse the new uri in the window
-    if uri == settings.get_setting("window.home_page")
-    or uri and not uri:match("^%s*$") then
+    if uri and not uri:match("^%s*$") then
         w:new_tab(w:search_open(uri), { switch = true })
+    elseif w.tabs:count() == 0 then
+        w:new_tab(w:search_open(settings.get_setting("window.home_page")), { switch = true })
     end
+
     w.win.screen = screen
     w.win.urgency_hint = true
 end)
