@@ -8,7 +8,7 @@ pkgdesc="A fast, small, webkit-gtk based browser extensible by Lua"
 arch=('i686' 'x86_64')
 url="https://luakit.github.io/"
 license=('GPL3')
-depends=('libwebkit' 'lua-filesystem' 'libunique')
+depends=('libwebkit' 'lua-filesystem')
 makedepends=('git' 'lua' 'help2man')
 optdepends=('luajit2: Needed if use the luajit option in make')
 # Luakit crowd fork

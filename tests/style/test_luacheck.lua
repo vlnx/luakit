@@ -28,7 +28,6 @@ function T.test_luacheck ()
         "timer",
         "download",
         "stylesheet",
-        "unique",
         "widget",
         "uris",
         "require_web_module",
