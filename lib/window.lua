@@ -459,7 +459,7 @@ _M.methods = {
            end
         end
 
-        if arg and not (type(arg) == "widget" and arg.type == "webview") then
+        if arg and type(arg) == "string" then
             webview.set_location(view, arg)
         end
 
