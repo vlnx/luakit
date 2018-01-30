@@ -448,6 +448,7 @@ _M.methods = {
               if tab.uri == settings.get_setting("window.new_tab_page") then
                  msg.verbose("new_tab: using existing blank tab, %s", tab.uri)
                  view = tab
+                 if switch then w.tabs:switch(w.tabs:indexof(view)) end
                  break
               end
            end
