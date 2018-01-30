@@ -446,7 +446,7 @@ _M.methods = {
            -- re-use any existing 'blank' views
            for tabindex, tab in ipairs(w.tabs.children) do
               if tab.uri == settings.get_setting("window.new_tab_page") then
-                 msg.warn("new_tab: using existing blank tab, %s", tab.uri)
+                 msg.verbose("new_tab: using existing blank tab, %s", tab.uri)
                  view = tab
                  break
               end
