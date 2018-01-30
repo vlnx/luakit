@@ -442,21 +442,23 @@ _M.methods = {
             local ww = webview.window(view)
             ww:detach_tab(view)
             w:attach_tab(view, switch, order)
-        else
-           -- re-use any existing 'blank' views
-           for tabindex, tab in ipairs(w.tabs.children) do
-              if tab.uri == settings.get_setting("window.new_tab_page") then
-                 msg.verbose("new_tab: using existing blank tab, %s", tab.uri)
-                 view = tab
-                 if switch then w.tabs:switch(w.tabs:indexof(view)) end
-                 break
-              end
-           end
-           if not view then
-              -- Make new webview widget
-              view = webview.new({ private = opts.private })
-              w:attach_tab(view, switch, order)
-           end
+        end
+
+        if not view and settings.get_setting("window.reuse_new_tab_pages") then
+            for tabindex, tab in ipairs(w.tabs.children) do
+                if tab.uri == settings.get_setting("window.new_tab_page") then
+                    msg.verbose("new_tab: using existing blank tab, %s", tab.uri)
+                    view = tab
+                    if switch then w.tabs:switch(w.tabs:indexof(view)) end
+                    break
+                end
+            end
+        end
+
+        if not view then
+            -- Make new webview widget
+            view = webview.new({ private = opts.private })
+            w:attach_tab(view, switch, order)
         end
 
         if arg and type(arg) == "string" then
@@ -776,6 +778,14 @@ settings.register_settings({
         type = "string",
         default = "about:blank",
         desc = "The URI to open when opening a new tab.",
+    },
+    ["window.reuse_new_tab_pages"] = {
+        type = "boolean",
+        default = true,
+        desc = [=[
+            Let w:new_tab use an existing view that is on `window.new_tab_page`.
+            Avoids unnecessarily creating new tabs, possibly multiple instances of `window.new_tab_page`.
+        ]=],
     },
     ["window.close_with_last_tab"] = {
         type = "boolean",
