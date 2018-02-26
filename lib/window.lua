@@ -503,7 +503,7 @@ _M.methods = {
         end
         -- Treat a blank last tab as an empty notebook (if blank_last=true)
         if blank_last ~= false and w.tabs:count() == 0 then
-            w:new_tab(settings.get_setting("window.new_tab_page"), false)
+            w:new_tab(settings.get_setting("window.new_tab_page"))
         end
     end,
 
@@ -764,7 +764,7 @@ function _M.new(args)
 
     -- Make sure something is loaded
     if w.tabs:count() == 0 then
-        w:new_tab(settings.get_setting("window.home_page"), false)
+        w:new_tab(settings.get_setting("window.home_page"))
     end
 
     return w
