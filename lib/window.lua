@@ -438,6 +438,7 @@ _M.methods = {
     -- Key `private` boolean The view's private browsing status.
     -- Key `switch` boolean To decide if this new tab should be the new active tab.
     -- Key `order` number To pass on to `attach_tab`.
+    -- Key `session_state` string To pass on to `webview.set_location`.
     -- @treturn table The new tab's `view`.
     new_tab = function (w, arg, opts)
         assert(arg == nil or type(arg) == "string" or type(arg) == "table"
@@ -474,8 +475,15 @@ _M.methods = {
 
         if opts.switch ~= false then w.tabs:switch(w.tabs:indexof(view)) end
 
+        local uri
+        if type(arg) == "string" then uri = arg end
+        if type(arg) == "table" then
+            uri = arg.uri
+            opts.session_state = arg.session_state
+        end
+
         if not opts.keep_blank then
-            w:search_open_navigate(view, arg or "")
+            w:navigate(uri or "", { view = view, session_state = opts.session_state })
         end
 
         return view
@@ -568,34 +576,13 @@ _M.methods = {
         if #luakit.windows == 0 then luakit.quit() end
     end,
 
-    -- Navigate current view or open new tab
-    navigate = function (w, arg, view)
-        assert(arg == nil or type(arg) == "string" or type(arg) == "table")
-        assert(view == nil or (type(view) == "widget" and view.type == "webview"))
-        if not view then view = w.view end
-        if view and arg then
-            w:search_open_navigate(view, arg)
-        else
-            w:new_tab(arg)
-        end
-    end,
-
-    -- Wrap @ref{set_location} to filter a string argument through @ref{search_open}
-    -- @tparam widget view The view whose location to modify.
-    -- @tparam table arg The new location. Can be a query to search, a URI,
-    -- a JavaScript URI, or a table with `session_state` and `uri` keys.
-    search_open_navigate = function (w, view, arg)
-        assert(type(view) == "widget" and view.type == "webview")
-        assert(type(arg) == "string" or type(arg) == "table")
-        local uri = ""
-        local opts = {}
-        if type(arg) == "string" then
-            uri = arg
-        end
-        if type(arg) == "table" then
-            uri = arg.uri
-            opts.session_state = arg.session_state
-        end
+    -- Navigate a view(given, current, or new) to `uri`
+    -- @tparam string uri The location to navigate to, filtered through `search_open`
+    -- @tparam table|nil opts Optional table using keys `view` and `session_state`
+    navigate = function (w, uri, opts)
+        assert(type(uri) == "string")
+        opts = opts or {}
+        local view = opts.view or w.view or w:new_tab(nil, { keep_blank = true })
         require("webview").set_location(view, w:search_open(uri), opts.session_state)
     end,
 
