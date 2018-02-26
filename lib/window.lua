@@ -483,7 +483,7 @@ _M.methods = {
         end
 
         if not opts.keep_blank then
-            w:navigate(uri or "", { view = view, session_state = opts.session_state })
+            w:navigate(uri, { view = view, session_state = opts.session_state })
         end
 
         return view
@@ -577,13 +577,13 @@ _M.methods = {
     end,
 
     -- Navigate a view(given, current, or new) to `uri`
-    -- @tparam string uri The location to navigate to, filtered through `search_open`
+    -- @tparam string|nil uri The location to navigate to, filtered through `search_open`
     -- @tparam table|nil opts Optional table using keys `view` and `session_state`
     navigate = function (w, uri, opts)
-        assert(type(uri) == "string")
+        assert(uri == nil or type(uri) == "string")
         opts = opts or {}
         local view = opts.view or w.view or w:new_tab(nil, { keep_blank = true })
-        require("webview").set_location(view, w:search_open(uri), opts.session_state)
+        require("webview").set_location(view, w:search_open(uri or ""), opts.session_state)
     end,
 
     -- Save, restart luakit and reload session.
