@@ -432,6 +432,9 @@ _M.methods = {
         w:update_buf()
     end,
 
+    -- Create a new tab
+    -- @tparam table opts Optional tab arguments.
+    -- Key `keep_blank` boolean Skip setting an initial location.
     new_tab = function (w, arg, opts)
         assert(arg == nil or type(arg) == "string" or type(arg) == "table"
                    or (type(arg) == "widget" and arg.type == "webview"))
@@ -468,7 +471,9 @@ _M.methods = {
 
         if switch ~= false then w.tabs:switch(w.tabs:indexof(view)) end
 
-        if arg then w:search_open_navigate(view, arg) end
+        if not opts.keep_blank then
+            w:search_open_navigate(view, arg or "")
+        end
 
         return view
     end,
