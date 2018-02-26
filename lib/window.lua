@@ -444,7 +444,6 @@ _M.methods = {
                    or (type(arg) == "widget" and arg.type == "webview"))
         opts = opts or {}
         assert(type(opts) == "table")
-        local switch, order = opts.switch, opts.order
 
         -- Bit of a hack
         local webview = require("webview")
@@ -454,7 +453,7 @@ _M.methods = {
             view = arg
             local ww = webview.window(view)
             ww:detach_tab(view)
-            w:attach_tab(view, switch, order)
+            w:attach_tab(view, opts.switch, opts.order)
         end
 
         if not view and settings.get_setting("window.reuse_new_tab_pages") then
@@ -470,10 +469,10 @@ _M.methods = {
         if not view then
             -- Make new webview widget
             view = webview.new({ private = opts.private })
-            w:attach_tab(view, switch, order)
+            w:attach_tab(view, opts.switch, opts.order)
         end
 
-        if switch ~= false then w.tabs:switch(w.tabs:indexof(view)) end
+        if opts.switch ~= false then w.tabs:switch(w.tabs:indexof(view)) end
 
         if not opts.keep_blank then
             w:search_open_navigate(view, arg or "")
