@@ -435,6 +435,10 @@ _M.methods = {
     -- Create a new tab
     -- @tparam table opts Optional tab arguments.
     -- Key `keep_blank` boolean Skip setting an initial location.
+    -- Key `private` boolean The view's private browsing status.
+    -- Key `switch` boolean To decide if this new tab should be the new active tab.
+    -- Key `order` number To pass on to `attach_tab`.
+    -- @treturn table The new tab's `view`.
     new_tab = function (w, arg, opts)
         assert(arg == nil or type(arg) == "string" or type(arg) == "table"
                    or (type(arg) == "widget" and arg.type == "webview"))
