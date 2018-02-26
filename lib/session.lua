@@ -130,7 +130,7 @@ local restore_file = function (file, delete)
             end
             -- Block the tab load, then set its location
             webview.modify_load_block(v, "session-restore", true)
-            webview.set_location(v, { session_state = item.session_state, uri = item.uri })
+            webview.set_location(v, item.uri, item.session_state)
             local function unblock(vv)
                 webview.modify_load_block(vv, "session-restore", false)
                 vv:remove_signal("switched-page", unblock)

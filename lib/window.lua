@@ -579,8 +579,16 @@ _M.methods = {
     search_open_navigate = function (w, view, arg)
         assert(type(view) == "widget" and view.type == "webview")
         assert(type(arg) == "string" or type(arg) == "table")
-        if type(arg) == "string" then arg = w:search_open(arg) end
-        require("webview").set_location(view, arg)
+        local uri = ""
+        local opts = {}
+        if type(arg) == "string" then
+            uri = arg
+        end
+        if type(arg) == "table" then
+            uri = arg.uri
+            opts.session_state = arg.session_state
+        end
+        require("webview").set_location(view, w:search_open(uri), opts.session_state)
     end,
 
     -- Save, restart luakit and reload session.

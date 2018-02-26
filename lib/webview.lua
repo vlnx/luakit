@@ -329,7 +329,7 @@ function _M.modify_load_block(view, name, enable)
         msg.verbose("fully unblocked %s", view)
         local queued = ws.queued_location
         ws.queued_location = nil
-        _M.set_location(view, queued)
+        _M.set_location(view, queued.uri, queued.session_state)
     end
 end
 
@@ -344,14 +344,15 @@ end
 --- Set the location of the webview. This method will respect any load blocks in
 -- place (see @ref{modify_load_block}).
 -- @tparam widget view The view whose location to modify.
--- @tparam table arg The new location. Can be a URI, a JavaScript URI, or a
--- table with `session_state` and `uri` keys.
-function _M.set_location(view, arg)
+-- @tparam string uri The new location. Handles JavaScript schema by evaluating in `view`
+-- @tparam string|nil session_state WebKit data to restore view state.
+function _M.set_location(view, uri, session_state)
     assert(type(view) == "widget" and view.type == "webview")
-    assert(type(arg) == "string" or type(arg) == "table")
+    assert(type(uri) == "string")
+    assert(session_state == nil or type(session_state) == "string")
 
     -- Always execute JS URIs immediately, even when webview is blocked
-    if type(arg) == "string" and arg:match("^javascript:") then
+    if uri:match("^javascript:") then
         local js = string.match(arg, "^javascript:(.+)$")
         return view:eval_js(luakit.uri_decode(js), {
                 no_return = true,
@@ -362,23 +363,20 @@ function _M.set_location(view, arg)
             })
     end
 
-    if type(arg) == "string" then arg = { uri = arg } end
-    assert(arg.uri or arg.session_state)
-
     local ws = webview_state[view]
     if next(ws.blockers) then
-        ws.queued_location = arg
-        if arg.uri then view:emit_signal("property::uri") end
+        ws.queued_location = { uri = uri, session_state = session_state }
+        if uri then view:emit_signal("property::uri") end
         return
     end
 
-    if arg.session_state then
-        view.session_state = arg.session_state
-        if view.uri == "about:blank" and arg.uri then
-            view.uri = arg.uri
+    if session_state then
+        view.session_state = session_state
+        if view.uri == "about:blank" and uri then
+            view.uri = uri
         end
     else
-        view.uri = arg.uri
+        view.uri = uri
     end
 end
 
