@@ -216,7 +216,10 @@ add_binds("undolist", lousy.util.table.join({
         if row and row.uid then
             for i, tab in ipairs(ctabs) do
                 if tab.uid == row.uid then
-                    w:new_tab(table.remove(ctabs, i), { switch = false })
+                    local restored_tab = table.remove(ctabs, i)
+                    w:new_tab(restored_tab.uri,
+                              { session_state = restored_tab.session_state
+                                , switch = false })
                     break
                 end
             end

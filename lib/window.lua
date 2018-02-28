@@ -444,23 +444,7 @@ _M.methods = {
     -- Key `session_state` string To pass on to `webview.set_location`.
     -- @treturn table The new tab's `view`.
     new_tab = function (w, uri, opts)
-        -- assert(uri == nil or type(uri) == "string")
-
-        -- start shim
-        assert(uri == nil or type(uri) == "string"
-                   or type(uri) == "table"
-                   or (type(uri) == "widget" and uri.type == "webview"))
-        if type(uri) == "table" then
-            msg.warn("new_tab, table given")
-            opts.session_state = uri.session_state
-            uri = uri.uri
-        end
-        if type(uri) == "widget" and uri.type == "webview" then
-            msg.warn("new_tab, webview given")
-            opts.view = uri
-        end
-        -- end shim
-
+        assert(uri == nil or type(uri) == "string")
         opts = opts or {}
         assert(type(opts) == "table")
 
