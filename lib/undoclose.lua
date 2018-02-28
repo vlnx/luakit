@@ -102,7 +102,7 @@ window.methods.undo_close_tab = function (w, index)
         return
     end
     -- Restore the view
-    local view = w:new_tab(nil, { keep_blank = true, session_state = tab.session_state })
+    local view = w:new_tab(nil, { session_state = tab.session_state })
     -- If tab was in the middle of a page load when it was closed, continue that now
     if tab.next_uri then
         view.uri = tab.next_uri
