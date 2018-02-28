@@ -433,16 +433,34 @@ _M.methods = {
     end,
 
     -- Create a new tab
-    -- @tparam table opts Optional tab arguments.
+    -- @tparam string|nil uri Initial uri.
+    -- When `keep_blank` isn't true, may fallback to `window.new_tab_page`.
+    -- @tparam table|nil opts Optional tab arguments.
+    -- Key `view` webview Provide an existing view to reattatch to this window.
     -- Key `keep_blank` boolean Skip setting an initial location.
     -- Key `private` boolean The view's private browsing status.
     -- Key `switch` boolean To decide if this new tab should be the new active tab.
     -- Key `order` number To pass on to `attach_tab`.
     -- Key `session_state` string To pass on to `webview.set_location`.
     -- @treturn table The new tab's `view`.
-    new_tab = function (w, arg, opts)
-        assert(arg == nil or type(arg) == "string" or type(arg) == "table"
-                   or (type(arg) == "widget" and arg.type == "webview"))
+    new_tab = function (w, uri, opts)
+        -- assert(uri == nil or type(uri) == "string")
+
+        -- start shim
+        assert(uri == nil or type(uri) == "string"
+                   or type(uri) == "table"
+                   or (type(uri) == "widget" and uri.type == "webview"))
+        if type(uri) == "table" then
+            msg.warn("new_tab, table given")
+            opts.session_state = uri.session_state
+            uri = uri.uri
+        end
+        if type(uri) == "widget" and uri.type == "webview" then
+            msg.warn("new_tab, webview given")
+            opts.view = uri
+        end
+        -- end shim
+
         opts = opts or {}
         assert(type(opts) == "table")
 
@@ -450,8 +468,8 @@ _M.methods = {
         local webview = require("webview")
 
         local view
-        if type(arg) == "widget" and arg.type == "webview" then
-            view = arg
+        if opts.view then
+            view = opts.view
             local ww = webview.window(view)
             ww:detach_tab(view)
             w:attach_tab(view, opts.switch, opts.order)
@@ -474,13 +492,6 @@ _M.methods = {
         end
 
         if opts.switch ~= false then w.tabs:switch(w.tabs:indexof(view)) end
-
-        local uri
-        if type(arg) == "string" then uri = arg end
-        if type(arg) == "table" then
-            uri = arg.uri
-            opts.session_state = arg.session_state
-        end
 
         if not opts.keep_blank then
             w:navigate(uri, { view = view, session_state = opts.session_state })
